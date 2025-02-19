@@ -7,14 +7,26 @@ public class VoltageSource extends CircuitElement {
     double voltage;
     int index;
 
-    public VoltageSource(int node1, int node2, double voltage, int index) {
-        super(node1, node2);
+    public VoltageSource(String id, int node1, int node2, double voltage, int index) {
+        super(id, node1, node2);
         this.voltage = voltage;
         this.index = index;
     }
 
     @Override
-    public void accept(MnaMatrixVisitor visitor, MatrixSparse matrixSparse, double[] rhs, double dt, int voltageIndex) {
-        visitor.visitVoltageSource(this, matrixSparse, rhs);
+    public void stamp(MatrixSparse mnaMatrix, double[] solutionVector, double h, IntegrationMethod integrationMethod) {
+        int n1 = node1;
+        int n2 = node2;
+
+        int row = mnaMatrix.getRowCount() - 1 - index;
+        if(n1 != 0) {
+            mnaMatrix.unsafeSet(row, n1 - 1, 1);
+            mnaMatrix.unsafeSet(n1 - 1, row, 1);
+        }
+        if(n2 != 0) {
+            mnaMatrix.unsafeSet(row, n2 - 1, -1);
+            mnaMatrix.unsafeSet(n2 - 1, row, -1);
+        }
+        solutionVector[row] = voltage;
     }
 }
