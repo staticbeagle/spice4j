@@ -17,11 +17,25 @@ public class Capacitor extends CircuitElement {
     }
 
     @Override
-    public void stamp(MatrixSparse mnaMatrix, double[] solutionVector, double dt) {
+    public void stamp(MatrixSparse mnaMatrix, double[] solutionVector, double dt, IntegrationMethod integrationMethod) {
         int n1 = node1;
         int n2 = node2;
-        //double gC  = 2 * capacitance / dt;
-        double gC = capacitance / dt;//method == 0 ? (3 * C) / (2 * dt) : C / dt;
+        double gC = 0;
+        double iEq = 0;
+        switch (integrationMethod) {
+            case TRAPEZOIDAL -> {
+                gC = 2 * capacitance / dt;
+                iEq = gC * previousVoltage1 + previousCurrent;
+            }
+            case BACKWARDS_EULER -> {
+                gC = capacitance / dt;
+                iEq = gC * previousVoltage1;
+            }
+            case GEAR_2 -> {
+                gC = 3 * capacitance / (2 * dt);
+                iEq = 2 * capacitance * previousVoltage1 / dt - capacitance * previousVoltage2 / (2 * dt);
+            }
+        }
 
         if(n1 != 0) {
             mnaMatrix.unsafeSet(n1 - 1, n1 -1, mnaMatrix.unsafeGet(n1 - 1, n1 - 1) + gC);
@@ -34,39 +48,36 @@ public class Capacitor extends CircuitElement {
             mnaMatrix.unsafeSet(n2 - 1, n1 -1, mnaMatrix.unsafeGet(n2 - 1, n1 - 1) - gC);
         }
 
-        System.out.println(mnaMatrix.toDense());
-
-        double iEq = gC * previousVoltage1; // + previousCurrent;
-        //double iEq = gC * previousVoltage1;// - previousCurrent;// + capacitor.previousVoltage1;// method == 0 ? (2 * C / dt * capacitor.previousVoltage1) - (C / (2 * dt) * capacitor.previousVoltage2) : gC * capacitor.previousVoltage1;
-        //previousVoltage2 = previousVoltage1;
-        //previousCurrent = iEq - previousCurrent;
-
         if(n1 != 0) {
             solutionVector[n1 - 1] = iEq;
-            previousVoltage1 = iEq / gC;
         }
         if(n2 != 0) {
-            solutionVector[n2 - 1] -= iEq;
-        }
-        if(n1 != 0 && n2 != 0) {
-            previousVoltage1 = (solutionVector[n1 - 1] - solutionVector[n2 - 1]) / gC;
+            solutionVector[n2 - 1] = -iEq;
         }
     }
 
     @Override
-    public void updateMemory(double[] solutionVector) {
+    public void updateMemory(double[] solutionVector, double dt, IntegrationMethod integrationMethod) {
         int n1 = node1;
         int n2 = node2;
+        double gC = 0;
+        switch (integrationMethod) {
+            case TRAPEZOIDAL -> gC = 2 * capacitance / dt;
+            case BACKWARDS_EULER -> gC = capacitance / dt;
+            case GEAR_2 -> gC = 3 * capacitance / (2 * dt);
+        }
 
         if(n1 != 0) {
+            double voltageDifference = solutionVector[n1 - 1] - previousVoltage1;
+            previousVoltage2 = previousVoltage1;
             previousVoltage1 = solutionVector[n1 - 1];
+            previousCurrent = gC * voltageDifference - previousCurrent;
         }
         if(n2 != 0) {
+            double voltageDifference = solutionVector[n2 - 1] - previousVoltage1;
+            previousVoltage2 = previousVoltage1;
             previousVoltage1 = solutionVector[n2 - 1];
+            previousCurrent = gC * voltageDifference - previousCurrent;
         }
-        if(n1 != 0 && n2 != 0) {
-            previousVoltage1 = solutionVector[n1 - 1] - solutionVector[n2 - 1];
-        }
-
     }
 }

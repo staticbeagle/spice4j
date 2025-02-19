@@ -14,7 +14,7 @@ public class VoltageSource extends CircuitElement {
     }
 
     @Override
-    public void stamp(MatrixSparse mnaMatrix, double[] solutionVector, double dt) {
+    public void stamp(MatrixSparse mnaMatrix, double[] solutionVector, double h, IntegrationMethod integrationMethod) {
         int n1 = node1;
         int n2 = node2;
 

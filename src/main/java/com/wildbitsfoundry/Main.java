@@ -12,11 +12,11 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-//        ckt1();
-//        ckt2();
-//        ckt3();
+        ckt1();
+        ckt2();
+        ckt3();
         ckt4();
-//        ckt5();
+        ckt5();
         ckt6();
     }
 
@@ -137,60 +137,30 @@ public class Main {
         int numNodes = 2;
         int numVoltageSources = 1;
         int size = numNodes + numVoltageSources;
-        double dt = 0.1;
+        double dt = 1e-6;
         double tol = 1e-3;
         double maxDt = 0.1;
         double minDt = 1e-6;
         double maxSteps = 100;  // Find better name
         double[] time = DoubleArrays.linSpace(0, 10e-3, 10);
+        IntegrationMethod integrationMethod = IntegrationMethod.GEAR_2;
         double[] capVoltage = new double[time.length];
 
-        double previousError = 0;
         for(int i = 0; i < time.length; i++) {
             MatrixSparse mnaMatrix = new MatrixSparse(size, size);
             double[] rhs = new double[size];
 
             double t = time[i] + dt;
             for(CircuitElement element : elementList) {
-                element.stamp(mnaMatrix, rhs, t);
+                element.stamp(mnaMatrix, rhs, t, integrationMethod);
             }
 
-            System.out.println(mnaMatrix.toDense());
-            System.out.println(Arrays.toString(rhs));
-            // Gear-2 solution
-            double[] solutionGear2 = mnaMatrix.solve(rhs).toDense().getCol(0);
-            capVoltage[i] = solutionGear2[1];
-
-            System.out.println(Arrays.toString(solutionGear2));
-
-
-            // Backwards Euler (Gear - 1)
-//            MatrixSparse mnaMatrixBe = new MatrixSparse(size, size);
-//            double[] rhsBe = new double[size];
-
-//            for(CircuitElement element : elementList) {
-//                element.accept(visitor, mnaMatrixBe, rhsBe, dt, 0);
-//            }
-//
-//            double[] solutionGear1 = mnaMatrixBe.solve(rhsBe).toDense().getCol(0);
-//            //double error = DoubleArrays.norm(DoubleArrays.subtractElementWise(solutionGear2, solutionGear1));
-//            double error = Math.abs(solutionGear2[1] - solutionGear1[1]);
-//            if(error > tol) {
-//                dt = Math.max(dt / 2, minDt);
-//            } else if(error < tol / 10) {
-//                dt = Math.min(dt * 2, maxDt);
-//            }
+            double[] solution = mnaMatrix.solve(rhs).toDense().getCol(0);
+            capVoltage[i] = solution[1];
 
             for(CircuitElement element : elementList) {
-                element.updateMemory(solutionGear2);
+                element.updateMemory(solution, t, integrationMethod);
             }
-
-            //System.out.printf("Step %d: dt = %.6f, Error = %.6f, V2 = %.6f%n", i, dt, 0.1, solutionGear2[1]);
-
-//            if(Math.abs(error - previousError) < 1e-6) {
-//                //break;
-//            }
-//            previousError = error;
         }
         System.out.println("Cap voltage: " + Arrays.toString(capVoltage));
     }
