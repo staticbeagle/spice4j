@@ -23,13 +23,13 @@ public class Capacitor extends CircuitElement {
         double gC = 0;
         double iEq = 0;
         switch (integrationMethod) {
-            case TRAPEZOIDAL -> {
-                gC = 2 * capacitance / dt;
-                iEq = gC * previousVoltage1 + previousCurrent;
-            }
             case BACKWARDS_EULER -> {
                 gC = capacitance / dt;
                 iEq = gC * previousVoltage1;
+            }
+            case TRAPEZOIDAL -> {
+                gC = 2 * capacitance / dt;
+                iEq = gC * previousVoltage1 + previousCurrent;
             }
             case GEAR_2 -> {
                 gC = 3 * capacitance / (2 * dt);
@@ -49,10 +49,10 @@ public class Capacitor extends CircuitElement {
         }
 
         if(n1 != 0) {
-            solutionVector[n1 - 1] = iEq;
+            solutionVector[n1 - 1] += iEq;
         }
         if(n2 != 0) {
-            solutionVector[n2 - 1] = -iEq;
+            solutionVector[n2 - 1] -= iEq;
         }
     }
 
@@ -62,8 +62,8 @@ public class Capacitor extends CircuitElement {
         int n2 = node2;
         double gC = 0;
         switch (integrationMethod) {
-            case TRAPEZOIDAL -> gC = 2 * capacitance / dt;
             case BACKWARDS_EULER -> gC = capacitance / dt;
+            case TRAPEZOIDAL -> gC = 2 * capacitance / dt;
             case GEAR_2 -> gC = 3 * capacitance / (2 * dt);
         }
 
@@ -71,7 +71,7 @@ public class Capacitor extends CircuitElement {
             double voltageDifference = solutionVector[n1 - 1] - previousVoltage1;
             previousVoltage2 = previousVoltage1;
             previousVoltage1 = solutionVector[n1 - 1];
-            previousCurrent = gC * voltageDifference - previousCurrent;
+            previousCurrent = gC * voltageDifference - previousCurrent; // only used in trapezoidal
         }
         if(n2 != 0) {
             double voltageDifference = solutionVector[n2 - 1] - previousVoltage1;
