@@ -40,14 +40,14 @@ public class Inductor extends CircuitElement {
         }
 
         int row = mnaMatrix.getRowCount() - 1 - index;
-        if(n1 != 0) {
-            mnaMatrix.unsafeSet(row - 1, row, 1);
+//        if(n1 != 0) {
+            mnaMatrix.unsafeSet(row - 2, row, 1);
             mnaMatrix.unsafeSet(row, row - 1, -1);
-        }
-        if(n2 != 0) {
+//        }
+//        if(n2 != 0) {
             mnaMatrix.unsafeSet(row - 1, row, -1);
-            mnaMatrix.unsafeSet(row, row - 1, -1);
-        }
+            mnaMatrix.unsafeSet(row, row - 2, 1);
+//        }
         mnaMatrix.unsafeSet(row, row, -gL);
         solutionVector[row] -= vEq;
 

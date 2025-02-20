@@ -14,7 +14,7 @@ public class Main {
     public static void main(String[] args) {
 //        ckt1();
 //        ckt2();
-        ckt3();
+//        ckt3();
 //        ckt4();
 //        ckt5();
 //        ckt6();
@@ -82,6 +82,10 @@ public class Main {
         for(CircuitElement element : elementList) {
             element.stamp(mnaMatrix, rhs);
         }
+
+        System.out.println(Arrays.toString(rhs));
+        System.out.println((mnaMatrix.toDense()));
+
         double[] solution = mnaMatrix.solve(rhs).toDense().getCol(0);
         System.out.println("Node voltages: " + Arrays.toString(solution));
     }
@@ -193,11 +197,11 @@ public class Main {
         List<CircuitElement> elementList = new ArrayList<>();
         elementList.add(new CurrentSource("I1", 0, 1, 1));
         elementList.add(new Resistor("R1", 1, 2, 1000));
-        elementList.add(new Inductor("L1", 2, 0, 1e-3, 0, 0));
-        //elementList.add(new VoltageSource("V1", 3, 0, 0, 1));
+        elementList.add(new Inductor("L1", 2, 3, 1e-3, 0, 1));
+        elementList.add(new VoltageSource("V1", 3, 0, 0, 0));
 
-        int numNodes = 2;
-        int numVoltageSources = 1;
+        int numNodes = 3;
+        int numVoltageSources = 2;
         int size = numNodes + numVoltageSources;
         IntegrationMethod integrationMethod = IntegrationMethod.BACKWARDS_EULER;
         double dt = 1e-4;
