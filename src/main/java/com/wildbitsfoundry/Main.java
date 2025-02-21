@@ -1,11 +1,8 @@
 package com.wildbitsfoundry;
 
-import com.wildbitsfoundry.etk4j.math.MathETK;
 import com.wildbitsfoundry.etk4j.math.linearalgebra.MatrixSparse;
-import com.wildbitsfoundry.etk4j.util.ComplexArrays;
 import com.wildbitsfoundry.etk4j.util.DoubleArrays;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +17,7 @@ public class Main {
 //        ckt6();
 //        ckt7();
         ckt8();
+        ckt9();
     }
 
     public static void ckt1() {
@@ -197,7 +195,48 @@ public class Main {
         List<CircuitElement> elementList = new ArrayList<>();
         elementList.add(new CurrentSource("I1", 0, 1, 1));
         elementList.add(new Resistor("R1", 1, 2, 1000));
-        elementList.add(new Inductor("L1", 2, 3, 1e-3, 0, 1));
+        elementList.add(new Inductor("L1", 2, 0, 1e-3, 0, 0));
+        //elementList.add(new VoltageSource("V1", 3, 0, 0, 0));
+
+        int numNodes = 2;
+        int numVoltageSources = 1;
+        int size = numNodes + numVoltageSources;
+        IntegrationMethod integrationMethod = IntegrationMethod.BACKWARDS_EULER;
+        double dt = 1e-4;
+        double[] time = DoubleArrays.linSpace(0, 10e-3, 10);
+        double[] inductorCurrent = new double[time.length];
+        double[] inductorVoltage = new double[time.length];
+
+        for(int i = 0; i < time.length; i++) {
+            MatrixSparse mnaMatrix = new MatrixSparse(size, size);
+            double[] rhs = new double[size];
+
+            double t = time[i] + dt;
+            for (CircuitElement element : elementList) {
+                element.stamp(mnaMatrix, rhs, t, integrationMethod);
+            }
+
+            System.out.println("RHS: " + Arrays.toString(rhs));
+            System.out.println((mnaMatrix.toDense()));
+            double[] solution = mnaMatrix.solve(rhs).toDense().getCol(0);
+            inductorCurrent[i] = solution[solution.length - 1];
+            inductorVoltage[i] = solution[solution.length - 2];
+
+            System.out.println("Solution:" + Arrays.toString(solution));
+
+            for (CircuitElement element : elementList) {
+                element.updateMemory(solution, t, integrationMethod);
+            }
+        }
+        System.out.println("Inductor current: " + Arrays.toString(inductorCurrent));
+        System.out.println("Inductor Voltage: " + Arrays.toString(inductorVoltage));
+    }
+
+    public static void ckt9() {
+        List<CircuitElement> elementList = new ArrayList<>();
+        elementList.add(new CurrentSource("I1", 0, 1, 1));
+        elementList.add(new Resistor("R1", 1, 2, 1000));
+        elementList.add(new Inductor("L1", 2, 3, 1e-3, 1e-3, 1));
         elementList.add(new VoltageSource("V1", 3, 0, 0, 0));
 
         int numNodes = 3;
@@ -218,13 +257,13 @@ public class Main {
                 element.stamp(mnaMatrix, rhs, t, integrationMethod);
             }
 
-            System.out.println(Arrays.toString(rhs));
+            System.out.println("RHS: " + Arrays.toString(rhs));
             System.out.println((mnaMatrix.toDense()));
             double[] solution = mnaMatrix.solve(rhs).toDense().getCol(0);
             inductorCurrent[i] = solution[solution.length - 1];
             inductorVoltage[i] = solution[solution.length - 2];
 
-            System.out.println(Arrays.toString(solution));
+            System.out.println("Solution:" + Arrays.toString(solution));
 
             for (CircuitElement element : elementList) {
                 element.updateMemory(solution, t, integrationMethod);
