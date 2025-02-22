@@ -14,11 +14,5 @@ public abstract class CircuitElement {
         this.node2 = node2;
     }
 
-    public abstract void stamp(MatrixSparse mnaMatrix, double[] solutionVector, double dt, IntegrationMethod integrationMethod);
-
-    public void stamp(MatrixSparse mnaMatrix, double[] solutionVector) {
-        stamp(mnaMatrix, solutionVector, 0, null);
-    }
-
-    public void updateMemory(double[] solutionVector, double dt, IntegrationMethod integrationMethod) {}
+    public abstract void stamp(MatrixSparse mnaMatrix, double[] solutionVector);
 }

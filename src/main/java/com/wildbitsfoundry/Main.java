@@ -16,8 +16,9 @@ public class Main {
 //        ckt5();
 //        ckt6();
 //        ckt7();
-        ckt8();
-        ckt9();
+//        ckt8();
+//        ckt9();
+        ckt10();
     }
 
     public static void ckt1() {
@@ -146,7 +147,7 @@ public class Main {
         double minDt = 1e-6;
         double maxSteps = 100;  // Find better name
         double[] time = DoubleArrays.linSpace(0, 10e-3, 10);
-        IntegrationMethod integrationMethod = IntegrationMethod.GEAR_2;
+        IntegrationMethod integrationMethod = IntegrationMethod.BDF_2ND_ORDER;
         double[] capVoltage = new double[time.length];
 
         for(int i = 0; i < time.length; i++) {
@@ -155,14 +156,20 @@ public class Main {
 
             double t = time[i] + dt;
             for(CircuitElement element : elementList) {
-                element.stamp(mnaMatrix, rhs, t, integrationMethod);
+                if(element instanceof ReactiveElement) {
+                    ((ReactiveElement) element).stamp(mnaMatrix, rhs, t, integrationMethod);
+                } else {
+                    element.stamp(mnaMatrix, rhs);
+                }
             }
 
             double[] solution = mnaMatrix.solve(rhs).toDense().getCol(0);
             capVoltage[i] = solution[1];
 
             for(CircuitElement element : elementList) {
-                element.updateMemory(solution, t, integrationMethod);
+                if(element instanceof ReactiveElement) {
+                    ((ReactiveElement) element).updateMemory(solution, t, integrationMethod);
+                }
             }
         }
         System.out.println("Cap voltage: " + Arrays.toString(capVoltage));
@@ -213,7 +220,11 @@ public class Main {
 
             double t = time[i] + dt;
             for (CircuitElement element : elementList) {
-                element.stamp(mnaMatrix, rhs, t, integrationMethod);
+                if(element instanceof ReactiveElement) {
+                    ((ReactiveElement) element).stamp(mnaMatrix, rhs, t, integrationMethod);
+                } else {
+                    element.stamp(mnaMatrix, rhs);
+                }
             }
 
             System.out.println("RHS: " + Arrays.toString(rhs));
@@ -225,7 +236,9 @@ public class Main {
             System.out.println("Solution:" + Arrays.toString(solution));
 
             for (CircuitElement element : elementList) {
-                element.updateMemory(solution, t, integrationMethod);
+                if(element instanceof ReactiveElement) {
+                    ((ReactiveElement) element).updateMemory(solution, t, integrationMethod);
+                }
             }
         }
         System.out.println("Inductor current: " + Arrays.toString(inductorCurrent));
@@ -254,19 +267,72 @@ public class Main {
 
             double t = time[i] + dt;
             for (CircuitElement element : elementList) {
-                element.stamp(mnaMatrix, rhs, t, integrationMethod);
+                if(element instanceof ReactiveElement) {
+                    ((ReactiveElement) element).stamp(mnaMatrix, rhs, t, integrationMethod);
+                } else {
+                    element.stamp(mnaMatrix, rhs);
+                }
             }
 
             System.out.println("RHS: " + Arrays.toString(rhs));
             System.out.println((mnaMatrix.toDense()));
             double[] solution = mnaMatrix.solve(rhs).toDense().getCol(0);
             inductorCurrent[i] = solution[solution.length - 1];
-            inductorVoltage[i] = solution[solution.length - 2];
+            inductorVoltage[i] = solution[solution.length - 3];
 
             System.out.println("Solution:" + Arrays.toString(solution));
 
             for (CircuitElement element : elementList) {
-                element.updateMemory(solution, t, integrationMethod);
+                if(element instanceof ReactiveElement) {
+                    ((ReactiveElement) element).updateMemory(solution, t, integrationMethod);
+                }
+            }
+        }
+        System.out.println("Inductor current: " + Arrays.toString(inductorCurrent));
+        System.out.println("Inductor Voltage: " + Arrays.toString(inductorVoltage));
+    }
+
+    public static void ckt10() {
+        List<CircuitElement> elementList = new ArrayList<>();
+        elementList.add(new CurrentSource("I1", 0, 1, 1));
+        elementList.add(new Resistor("R1", 1, 2, 1000));
+        elementList.add(new Inductor("L1", 2, 3, 1e-3, 1e-3, 1));
+        elementList.add(new VoltageSource("V1", 3, 0, 0, 0));
+
+        int numNodes = 3;
+        int numVoltageSources = 2;
+        int size = numNodes + numVoltageSources;
+        IntegrationMethod integrationMethod = IntegrationMethod.TRAPEZOIDAL;
+        double dt = 1e-4;
+        double[] time = DoubleArrays.linSpace(0, 10e-3, 10);
+        double[] inductorCurrent = new double[time.length];
+        double[] inductorVoltage = new double[time.length];
+
+        for(int i = 0; i < time.length; i++) {
+            MatrixSparse mnaMatrix = new MatrixSparse(size, size);
+            double[] rhs = new double[size];
+
+            double t = time[i] + dt;
+            for (CircuitElement element : elementList) {
+                if(element instanceof ReactiveElement) {
+                    ((ReactiveElement) element).stamp(mnaMatrix, rhs, t, integrationMethod);
+                } else {
+                    element.stamp(mnaMatrix, rhs);
+                }
+            }
+
+            System.out.println("RHS: " + Arrays.toString(rhs));
+            System.out.println((mnaMatrix.toDense()));
+            double[] solution = mnaMatrix.solve(rhs).toDense().getCol(0);
+            inductorCurrent[i] = solution[solution.length - 1];
+            inductorVoltage[i] = solution[solution.length - 3];
+
+            System.out.println("Solution:" + Arrays.toString(solution));
+
+            for (CircuitElement element : elementList) {
+                if(element instanceof ReactiveElement) {
+                    ((ReactiveElement) element).updateMemory(solution, t, integrationMethod);
+                }
             }
         }
         System.out.println("Inductor current: " + Arrays.toString(inductorCurrent));

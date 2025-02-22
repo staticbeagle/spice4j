@@ -12,14 +12,14 @@ public class CurrentSource extends CircuitElement {
     }
 
     @Override
-    public void stamp(MatrixSparse mnaMatrix, double[] solutionVector, double dt, IntegrationMethod integrationMethod) {
+    public void stamp(MatrixSparse mnaMatrix, double[] solutionVector) {
         int n1 = node1;
         int n2 = node2;
 
-        if(n1 != 0) {
+        if (n1 != 0) {
             solutionVector[n1 - 1] -= current;
         }
-        if(n2 != 0) {
+        if (n2 != 0) {
             solutionVector[n2 - 1] += current;
         }
     }

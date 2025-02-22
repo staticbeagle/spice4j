@@ -2,7 +2,7 @@ package com.wildbitsfoundry;
 
 import com.wildbitsfoundry.etk4j.math.linearalgebra.MatrixSparse;
 
-public class Inductor extends CircuitElement {
+public class Inductor extends CircuitElement implements ReactiveElement {
 
     double inductance;
     double previousCurrent1;
@@ -19,6 +19,11 @@ public class Inductor extends CircuitElement {
     }
 
     @Override
+    public void stamp(MatrixSparse mnaMatrix, double[] solutionVector) {
+
+    }
+
+    @Override
     public void stamp(MatrixSparse mnaMatrix, double[] solutionVector, double dt, IntegrationMethod integrationMethod) {
         int n1 = node1;
         int n2 = node2;
@@ -29,14 +34,14 @@ public class Inductor extends CircuitElement {
                 gL = inductance / dt;
                 vEq = gL * previousCurrent1;
             }
-//            case TRAPEZOIDAL -> {
-//                gC = 2 * capacitance / dt;
-//                iEq = gC * previousVoltage1 + previousCurrent;
-//            }
-//            case GEAR_2 -> {
-//                gC = 3 * capacitance / (2 * dt);
-//                iEq = 2 * capacitance * previousVoltage1 / dt - capacitance * previousVoltage2 / (2 * dt);
-//            }
+            case TRAPEZOIDAL -> {
+                gL = 2 * inductance / dt;
+                vEq = gL * previousCurrent1 + previousVoltage;
+            }
+            case BDF_2ND_ORDER -> {
+                gL = 3 * inductance / (2 * dt);
+                vEq = 2 * inductance * previousCurrent1 / dt - inductance * previousCurrent2 / (2 * dt);
+            }
         }
 
         int row = mnaMatrix.getRowCount() - 1 - index;
@@ -49,24 +54,31 @@ public class Inductor extends CircuitElement {
             mnaMatrix.unsafeSet(n2 - 1, row, -1);
         }
         mnaMatrix.unsafeSet(row, row, -gL);
-        solutionVector[row] -= vEq;
+        solutionVector[row] = -vEq;
 
     }
 
     @Override
-    public void updateMemory(double[] solutionVector, double dt, IntegrationMethod integrationMethod) {
-        int n1 = node1;
-        int n2 = node2;
-        double gL = 0;
+    public void updateMemory(double[] solutionVector, double h, IntegrationMethod integrationMethod) {
+        double gL;
         switch (integrationMethod) {
-            case BACKWARDS_EULER -> gL = inductance / dt;
-//            case TRAPEZOIDAL -> gC = 2 * capacitance / dt;
-//            case GEAR_2 -> gC = 3 * capacitance / (2 * dt);
+            case BACKWARDS_EULER -> {
+                int row = solutionVector.length - 1 - index;
+                previousCurrent1 = solutionVector[row];
+            }
+            case TRAPEZOIDAL -> {
+                gL = 2 * inductance / h;
+                int row = solutionVector.length - 1 - index;
+                previousCurrent1 = solutionVector[row];
+                previousVoltage = previousVoltage - previousCurrent1;
+            }
+            case BDF_2ND_ORDER -> {
+                gL = 2 * inductance / (h);
+                int row = solutionVector.length - 1 - index;
+                previousCurrent2 = previousCurrent1;
+                previousCurrent1 = solutionVector[row];
+                previousVoltage = gL * previousCurrent1 + inductance / (2 * h) * previousCurrent2;
+            }
         }
-
-        int row = solutionVector.length - 1 - index;
-        previousCurrent2 = previousCurrent1;
-        previousCurrent1 = solutionVector[row];
-        // previousVoltage = ?
     }
 }
