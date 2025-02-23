@@ -296,13 +296,13 @@ public class Main {
         List<CircuitElement> elementList = new ArrayList<>();
         elementList.add(new CurrentSource("I1", 0, 1, 1));
         elementList.add(new Resistor("R1", 1, 2, 1000));
-        elementList.add(new Inductor("L1", 2, 3, 1e-3, 1e-3, 1));
+        elementList.add(new Inductor("L1", 2, 3, 1e-3, 0, 1));
         elementList.add(new VoltageSource("V1", 3, 0, 0, 0));
 
         int numNodes = 3;
         int numVoltageSources = 2;
         int size = numNodes + numVoltageSources;
-        IntegrationMethod integrationMethod = IntegrationMethod.TRAPEZOIDAL;
+        IntegrationMethod integrationMethod = IntegrationMethod.BDF_2ND_ORDER;
         double dt = 1e-4;
         double[] time = DoubleArrays.linSpace(0, 10e-3, 10);
         double[] inductorCurrent = new double[time.length];
@@ -324,7 +324,7 @@ public class Main {
             System.out.println("RHS: " + Arrays.toString(rhs));
             System.out.println((mnaMatrix.toDense()));
             double[] solution = mnaMatrix.solve(rhs).toDense().getCol(0);
-            inductorCurrent[i] = solution[solution.length - 1];
+            inductorCurrent[i] = solution[solution.length - 2];
             inductorVoltage[i] = solution[solution.length - 3];
 
             System.out.println("Solution:" + Arrays.toString(solution));
