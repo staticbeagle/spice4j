@@ -35,8 +35,6 @@ public class Inductor extends CircuitElement implements ReactiveElement {
                 vEq = gL * previousCurrent1;
             }
             case TRAPEZOIDAL -> {
-//                gC = 2 * capacitance / h;
-//                iEq = gC * previousVoltage1 + previousCurrent;
                 gL =  2 * inductance / h;
                 vEq = 2 * inductance / h * previousCurrent1 + previousVoltage;
             }
