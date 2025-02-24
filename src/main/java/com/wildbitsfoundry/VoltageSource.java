@@ -14,16 +14,16 @@ public class VoltageSource extends CircuitElement {
     }
 
     @Override
-    public void stamp(MatrixSparse mnaMatrix, double[] solutionVector, double h, IntegrationMethod integrationMethod) {
+    public void stamp(MatrixSparse mnaMatrix, double[] solutionVector) {
         int n1 = node1;
         int n2 = node2;
 
         int row = mnaMatrix.getRowCount() - 1 - index;
-        if(n1 != 0) {
+        if (n1 != 0) {
             mnaMatrix.unsafeSet(row, n1 - 1, 1);
             mnaMatrix.unsafeSet(n1 - 1, row, 1);
         }
-        if(n2 != 0) {
+        if (n2 != 0) {
             mnaMatrix.unsafeSet(row, n2 - 1, -1);
             mnaMatrix.unsafeSet(n2 - 1, row, -1);
         }
