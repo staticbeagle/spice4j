@@ -36,7 +36,7 @@ public class Capacitor extends CircuitElement implements ReactiveElement {
                 gC = 2 * capacitance / h;
                 iEq = gC * previousVoltage1 + previousCurrent;
             }
-            case BDF_2ND_ORDER -> {
+            case GEAR_2ND_ORDER -> {
                 gC = 3 * capacitance / (2 * h);
                 iEq = 2 * capacitance * previousVoltage1 / h - capacitance * previousVoltage2 / (2 * h);
             }
@@ -68,7 +68,7 @@ public class Capacitor extends CircuitElement implements ReactiveElement {
         switch (integrationMethod) {
             case BACKWARDS_EULER -> gC = capacitance / dt;
             case TRAPEZOIDAL -> gC = 2 * capacitance / dt;
-            case BDF_2ND_ORDER -> gC = 3 * capacitance / (2 * dt);
+            case GEAR_2ND_ORDER -> gC = 3 * capacitance / (2 * dt);
         }
 
         double voltageDifference = solutionVector[n1 - 1] - previousVoltage1;
