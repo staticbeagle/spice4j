@@ -372,7 +372,7 @@ public class Main {
 
             System.out.println("RHS: " + Arrays.toString(rhs));
             System.out.println((mnaMatrix.toDense()));
-            double[] solution = mnaMatrix.solve(rhs).toDense().getCol(0);
+            double[] solution = mnaMatrix.solve(rhs).getArrayDense();
             inductorCurrent[i] = solution[solution.length - 2];
             inductorVoltage[i] = solution[solution.length - 3];
 
