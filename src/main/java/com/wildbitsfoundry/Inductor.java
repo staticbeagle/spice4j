@@ -27,19 +27,19 @@ public class Inductor extends CircuitElement implements ReactiveElement {
     public void stamp(MatrixSparse mnaMatrix, double[] solutionVector, double h, IntegrationMethod integrationMethod) {
         int n1 = node1;
         int n2 = node2;
-        double gL = 0;
+        double zL = 0;
         double vEq = 0;
         switch (integrationMethod) {
             case BACKWARDS_EULER -> {
-                gL = inductance / h;
-                vEq = gL * previousCurrent1;
+                zL = inductance / h;
+                vEq = zL * previousCurrent1;
             }
             case TRAPEZOIDAL -> {
-                gL =  2 * inductance / h;
+                zL =  2 * inductance / h;
                 vEq = 2 * inductance / h * previousCurrent1 + previousVoltage;
             }
             case GEAR_2ND_ORDER -> {
-                gL = 3 * inductance / (2 * h);
+                zL = 3 * inductance / (2 * h);
                 vEq = 2 * inductance * previousCurrent1 / h - inductance * previousCurrent2 / (2 * h);
             }
         }
@@ -53,13 +53,12 @@ public class Inductor extends CircuitElement implements ReactiveElement {
             mnaMatrix.unsafeSet(row, n2 - 1, -1);
             mnaMatrix.unsafeSet(n2 - 1, row, -1);
         }
-        mnaMatrix.unsafeSet(row, row, -gL);
+        mnaMatrix.unsafeSet(row, row, -zL);
         solutionVector[row] -= vEq;
     }
 
     @Override
     public void updateMemory(double[] solutionVector, double h, IntegrationMethod integrationMethod) {
-        double gL;
         switch (integrationMethod) {
             case BACKWARDS_EULER -> {
                 int row = solutionVector.length - 1 - index;
@@ -83,11 +82,10 @@ public class Inductor extends CircuitElement implements ReactiveElement {
                 previousVoltage = 2 * inductance / h * currentDifference - voltageDifference;
             }
             case GEAR_2ND_ORDER -> {
-                gL = 2 * inductance / h;
                 int row = solutionVector.length - 1 - index;
                 previousCurrent2 = previousCurrent1;
                 previousCurrent1 = solutionVector[row];
-                previousVoltage = gL * previousCurrent1 + inductance / (2 * h) * previousCurrent2;
+                previousVoltage = 2 * inductance / h * previousCurrent1 + inductance / (2 * h) * previousCurrent2;
             }
         }
     }
