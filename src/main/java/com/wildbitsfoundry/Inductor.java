@@ -30,7 +30,7 @@ public class Inductor extends CircuitElement implements ReactiveElement {
         double zL = 0;
         double vEq = 0;
         switch (integrationMethod) {
-            case BACKWARDS_EULER -> {
+            case BACKWARD_EULER -> {
                 zL = inductance / h;
                 vEq = zL * previousCurrent1;
             }
@@ -60,7 +60,7 @@ public class Inductor extends CircuitElement implements ReactiveElement {
     @Override
     public void updateMemory(double[] solutionVector, double h, IntegrationMethod integrationMethod) {
         switch (integrationMethod) {
-            case BACKWARDS_EULER -> {
+            case BACKWARD_EULER -> {
                 int row = solutionVector.length - 1 - index;
                 previousCurrent1 = solutionVector[row];
             }
