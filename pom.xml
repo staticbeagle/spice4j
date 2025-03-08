@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.wildbitsfoundry</groupId>
-    <artifactId>SPICE4J</artifactId>
+    <artifactId>spice4j</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
