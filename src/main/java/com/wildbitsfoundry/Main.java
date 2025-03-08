@@ -209,7 +209,7 @@ public class Main {
         int numNodes = 2;
         int numVoltageSources = 1;
         int size = numNodes + numVoltageSources;
-        IntegrationMethod integrationMethod = IntegrationMethod.BACKWARDS_EULER;
+        IntegrationMethod integrationMethod = IntegrationMethod.BACKWARD_EULER;
         double dt = 1e-4;
         double[] time = DoubleArrays.linSpace(0, 10e-3, 10);
         double[] inductorCurrent = new double[time.length];
@@ -256,7 +256,7 @@ public class Main {
         int numNodes = 3;
         int numVoltageSources = 2;
         int size = numNodes + numVoltageSources;
-        IntegrationMethod integrationMethod = IntegrationMethod.BACKWARDS_EULER;
+        IntegrationMethod integrationMethod = IntegrationMethod.BACKWARD_EULER;
         double dt = 1e-4;
         double[] time = DoubleArrays.linSpace(0, 10e-3, 10);
         double[] inductorCurrent = new double[time.length];
@@ -372,7 +372,7 @@ public class Main {
 
             System.out.println("RHS: " + Arrays.toString(rhs));
             System.out.println((mnaMatrix.toDense()));
-            double[] solution = mnaMatrix.solve(rhs).toDense().getCol(0);
+            double[] solution = mnaMatrix.solve(rhs).getArrayDense();
             inductorCurrent[i] = solution[solution.length - 2];
             inductorVoltage[i] = solution[solution.length - 3];
 
