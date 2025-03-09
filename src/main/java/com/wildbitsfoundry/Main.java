@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        ckt1();
+//        ckt1();
 //        ckt2();
 //        ckt3();
 //        ckt4();
@@ -20,7 +20,8 @@ public class Main {
 //        ckt9();
 //        ckt10();
 //        ckt11();
-        ckt12();
+//        ckt12();
+        ckt13();
     }
 
     public static void ckt1() {
@@ -400,6 +401,29 @@ public class Main {
 
         int numNodes = 4;
         int numVoltageSources = 2;
+        int size = numNodes + numVoltageSources;
+
+        MatrixSparse mnaMatrix = new MatrixSparse(size, size);
+        double[] rhs = new double[size];
+
+        for(CircuitElement element : elementList) {
+            element.stamp(mnaMatrix, rhs);
+        }
+
+        double[] solution = mnaMatrix.solve(rhs).toDense().getCol(0);
+        System.out.println("Node voltages: " + Arrays.toString(solution));
+    }
+
+    public static void ckt13() {
+        List<CircuitElement> elementList = new ArrayList<>();
+        elementList.add(new VoltageSource("V1", 1, 0, 10, 0));
+        elementList.add(new Resistor("R1", 1, 2, 1000));
+        elementList.add(new Resistor("R2", 2, 0, 1000));
+        elementList.add(new VCCS("G1", 0, 3, 2, 0, 1e-3));
+        elementList.add(new Resistor("R3", 3, 0, 1000));
+
+        int numNodes = 3;
+        int numVoltageSources = 1;
         int size = numNodes + numVoltageSources;
 
         MatrixSparse mnaMatrix = new MatrixSparse(size, size);
